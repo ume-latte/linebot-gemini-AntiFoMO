@@ -22,7 +22,20 @@ from linebot.models import (
     FlexSendMessage
 )
 import uvicorn
+#新增的
+from flask import Flask, request, abort
 
+from linebot import (
+    LineBotApi, WebhookHandler
+)
+from linebot.exceptions import (
+    InvalidSignatureError
+)
+from linebot.models import *
+import re
+
+
+app = Flask(__name__)
 logging.basicConfig(level=os.getenv('LOG', 'WARNING'))
 logger = logging.getLogger(__file__)
 
@@ -331,7 +344,7 @@ async def handle_callback(request: Request):
             )
             line_bot_api.reply_message(event.reply_token, flex_message)
         else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(message))
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(message))
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', default=8080))
