@@ -177,6 +177,8 @@ async def handle_callback(request: Request):
 
 from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, URIAction, TextSendMessage
 
+from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, URIAction, TextSendMessage
+
 # 功能介紹區
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -205,9 +207,6 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
 
 
-            line_bot_api.reply_message(event.reply_token, buttons_template_message)
-        else:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(message))
     if __name__ == "__main__":
     port = int(os.environ.get('PORT', default=8080))
     debug = True if os.environ.get(
