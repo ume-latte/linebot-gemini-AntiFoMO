@@ -19,6 +19,7 @@ from linebot.exceptions import (
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
     TemplateSendMessage, ButtonsTemplate, MessageAction, URIAction,
+    FlexSendMessage
 )
 import uvicorn
 
@@ -148,173 +149,74 @@ async def handle_callback(request: Request):
 
     return 'OK'
 
+@app.post("/webhooks/line")
+async def handle_message(request: Request):
+    signature = request.headers['X-Line-Signature']
+    body = await request.body()
+    body = body.decode()
 
-    # 功能介紹區
-    @app.post("/webhooks/line")
-    def handle_message(event):
-        message = event.message.text
-        if re.match('功能', message):
-            buttons_template_message = TemplateSendMessage(
-                alt_text='使用功能簡介',
-                template=ButtonsTemplate(
-                    thumbnail_image_url='https://i.imgur.com/wpM584d.jpg',
-                    title='行銷搬進大程式',
-                    text='選單功能－TemplateSendMessage',
-                    actions=[
-                        MessageAction(
-                            label='什麼是FoMO？',
-                            text='FOMO（Fear Of Missing Out，錯失恐懼症）由金融家Patrick McGinnis提出，指個體因害怕錯過機會或無法參與他人活動而產生的焦慮和恐懼。這種現象根植於人類基因，與歸屬感密切相關，代表著安全感和認同感。\n在社交媒體和快節奏生活中，人們通過與他人的連結獲取信息、得到認可和肯定，這促發了FOMO。\n 而社交平台的限時動態和短影音內容激發了FOMO心理，讓人渴望在短時間內獲取信息，並通過模仿行為來獲得更多關注和認同。然而，過度依賴他人的反應可能導致負面情緒，影響生活信念和態度。因此，需保持平衡，以避免FOMO帶來的負面影響。'
-                        ),
-                        URIAction(
-                            label='測試網址',
-                            uri='https://www.parenting.com.tw/article/5096067'
-                        )
-                    ]
+    try:
+        events = parser.parse(body, signature)
+    except InvalidSignatureError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    for event in events:
+        logging.info(event)
+        if isinstance(event, MessageEvent) and isinstance(event.message, TextMessage):
+            message = event.message.text
+            if re.match('功能', message):
+                buttons_template_message = TemplateSendMessage(
+                    alt_text='使用功能簡介',
+                    template=ButtonsTemplate(
+                        thumbnail_image_url='https://i.imgur.com/wpM584d.jpg',
+                        title='行銷搬進大程式',
+                        text='選單功能－TemplateSendMessage',
+                        actions=[
+                            MessageAction(
+                                label='什麼是FoMO？',
+                                text='FOMO（Fear Of Missing Out，錯失恐懼症）由金融家Patrick McGinnis提出，指個體因害怕錯過機會或無法參與他人活動而產生的焦慮和恐懼。這種現象根植於人類基因，與歸屬感密切相關，代表著安全感和認同感。\n在社交媒體和快節奏生活中，人們通過與他人的連結獲取信息、得到認可和肯定，這促發了FOMO。\n 而社交平台的限時動態和短影音內容激發了FOMO心理，讓人渴望在短時間內獲取信息，並通過模仿行為來獲得更多關注和認同。然而，過度依賴他人的反應可能導致負面情緒，影響生活信念和態度。因此，需保持平衡，以避免FOMO帶來的負面影響。'
+                            ),
+                            URIAction(
+                                label='測試網址',
+                                uri='https://www.parenting.com.tw/article/5096067'
+                            )
+                        ]
+                    )
                 )
-            )
-            line_bot_api.reply_message(event.reply_token, buttons_template_message)
-        else:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
+                await line_bot_api.reply_message(event.reply_token, buttons_template_message)
+            else:
+                await line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    message = text=event.message.text
-    if re.match('告訴我秘密',message):
-        # Flex Message Simulator網頁：https://developers.line.biz/console/fx/
+    message = text = event.message.text
+    if re.match('如何使用', message):
         flex_message = FlexSendMessage(
-            alt_text='行銷搬進大程式',
+            alt_text='卡片',
             contents={
-  "type": "bubble",
-  "hero": {
-    "type": "image",
-    "size": "full",
-    "aspectRatio": "20:13",
-    "aspectMode": "cover",
-    "action": {
-      "type": "uri",
-      "label": "推薦單曲",
-      "uri": "http://linecorp.com/"
-    },
-    "margin": "none",
-    "gravity": "top",
-    "backgroundColor": "#191414",
-    "animated": true,
-    "url": "https://hackmd.io/_uploads/Bk7UkqGDC.png",
-    "offsetTop": "none"
-  },
-  "body": {
-    "type": "box",
-    "layout": "vertical",
-    "contents": [
-      {
-        "type": "text",
-        "text": "Anti FoMO",
-        "weight": "bold",
-        "size": "xl",
-        "color": "#191414"
-      },
-      {
-        "type": "box",
-        "layout": "baseline",
-        "margin": "md",
-        "contents": [
-          {
-            "type": "text",
-            "text": "用音樂暫時逃離世界的紛擾",
-            "size": "sm",
-            "color": "#999999",
-            "margin": "none",
-            "flex": 0
-          }
-        ]
-      },
-      {
-        "type": "box",
-        "layout": "vertical",
-        "margin": "lg",
-        "spacing": "sm",
-        "contents": [
-          {
-            "type": "box",
-            "layout": "baseline",
-            "spacing": "sm",
-            "contents": [
-              {
-                "type": "text",
-                "text": "支援",
-                "color": "#aaaaaa",
-                "size": "sm",
-                "flex": 1
-              },
-              {
-                "type": "text",
-                "text": "Spotify",
-                "wrap": True,
-                "color": "#666666",
-                "size": "sm",
-                "flex": 5
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  "footer": {
-    "type": "box",
-    "layout": "vertical",
-    "spacing": "sm",
-    "contents": [
-      {
-        "type": "button",
-        "style": "link",
-        "height": "sm",
-        "action": {
-          "type": "message",
-          "label": "什麼是FoMO？",
-          "text": "FOMO（Fear Of Missing Out，錯失恐懼症）由金融家Patrick McGinnis提出，指個體因害怕錯過機會或無法參與他人活動而產生的焦慮和恐懼。這種現象根植於人類基因，與歸屬感密切相關，代表著安全感和認同感。\\n在社交媒體和快節奏生活中，人們通過與他人的連結獲取信息、得到認可和肯定，這促發了FOMO。\\n 而社交平台的限時動態和短影音內容激發了FOMO心理，讓人渴望在短時間內獲取信息，並通過模仿行為來獲得更多關注和認同。然而，過度依賴他人的反應可能導致負面情緒，影響生活信念和態度。因此，需保持平衡，以避免FOMO帶來的負面影響。"
-        },
-        "color": "#1DB954"
-      },
-      {
-        "type": "button",
-        "style": "link",
-        "height": "sm",
-        "action": {
-          "type": "uri",
-          "label": "查看機器人簡介",
-          "uri": "https://line.me/"
-        },
-        "color": "#1DB954"
-      },
-      {
-        "type": "button",
-        "style": "link",
-        "height": "sm",
-        "action": {
-          "type": "uri",
-          "label": "WEBSITE",
-          "uri": "https://line.me/"
-        },
-        "color": "#1DB954"
-      }
-    ],
-    "flex": 0
-  }
-}
-        )
-        line_bot_api.reply_message(event.reply_token, flex_message)
-    else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(message))
-#主程式
-import os
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', default=8080))
-    debug = True if os.environ.get('API_ENV', default='develop') == 'develop' else False
-    logging.info('Application will start...')
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=debug)
+                "type": "bubble",
+                "hero": {
+                    "type": "image",
+                    "size": "full",
+                    "aspectRatio": "20:13",
+                    "aspectMode": "cover",
+                    "action": {
+                        "type": "uri",
+                        "label": "推薦單曲",
+                        "uri": "http://linecorp.com/"
+                    },
+                    "margin": "none",
+                    "gravity": "top",
+                    "backgroundColor": "#191414",
+                    "animated": True,
+                    "url": "https://hackmd.io/_uploads/Bk7UkqGDC.png",
+                    "offsetTop": "none"
+                },
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "Anti FoMO",
+                            "
