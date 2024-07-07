@@ -61,7 +61,6 @@ async def handle_callback(request: Request):
         ignore_keywords = ["什麼是FoMO", "緩解FoMO指南", "FoMO測試", "連接spotify", "推薦歌曲", "推薦播放清單"]
         if any(keyword in text for keyword in ignore_keywords):
             return 'OK'  # Ignore messages containing any of the ignore_keywords
-        else:
          msg_type = event.message.type
          fdb = firebase.FirebaseApplication(firebase_url, None)
 
@@ -130,7 +129,7 @@ async def handle_callback(request: Request):
                     if current_weather is not None:
                         total_info = f'位置: {location}\n氣候: {current_weather["Wx"]}\n降雨機率: {current_weather["PoP"]}\n體感: {current_weather["CI"]}\n現在時間: {formatted_time}'
                         response = model.generate_content(
-                            f'請用繁體中文、以精簡並且不要加上任何文字格式（包括粗體斜體還有*號等等）回覆以下的訊息，{text}'
+                            f'請用繁體中文回覆以下的訊息，{text}'
                         )
                         reply_msg = response.text
                 else:
