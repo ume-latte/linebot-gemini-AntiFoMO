@@ -107,11 +107,11 @@ async def handle_callback(request: Request):
                 "摘要": 'B',
                 "地震": 'C',
                 "氣候": 'D',
-                "其他": 'E',
+                "音樂": 'E',
                 "連接spotify": 'F',
                 "FoMO": 'G',
                 "符合": 'H',
-                "音樂": 'I'
+                "其他": 'I'
             }
 
             model = genai.GenerativeModel('gemini-1.5-pro')
@@ -136,9 +136,9 @@ async def handle_callback(request: Request):
                 earth_res = requests.get(f'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/E-A0015-003?Authorization={OPEN_API_KEY}&downloadType=WEB&format=JSON')
                 url = earth_res.json()["cwaopendata"]["Dataset"]["Resource"]["ProductURL"]
                 reply_msg = check_image_quake(url) + f'\n\n{url}'
-            elif text_condition == 'H':
+            elif text_condition == 'H' or 'E' or 'F' or 'G' :
                 reply_msg = '如下'
-            elif text_condition == 'D':
+            elif text_condition == 'I':
                 location_text = '台北市'
                 location = check_location_in_message(location_text)
                 weather_data = get_weather_data(location)
