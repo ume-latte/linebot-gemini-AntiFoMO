@@ -145,7 +145,7 @@ async def handle_callback(request: Request):
                 if current_weather is not None:
                     total_info = f'位置: {location}\n氣候: {current_weather["Wx"]}\n降雨機率: {current_weather["PoP"]}\n體感: {current_weather["CI"]}\n現在時間: {formatted_time}'
                     response = model.generate_content(
-                        f'你現在身處在台灣，相關資訊 {total_info}，我朋友說了「{text}」，請問是否有誇張、假裝的嫌疑？ 回答是或否。'
+                        f'{text}」'
                     )
                     reply_msg = response.text
             else:
