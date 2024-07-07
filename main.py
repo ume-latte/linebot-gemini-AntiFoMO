@@ -145,7 +145,7 @@ async def handle_callback(request: Request):
                 if current_weather is not None:
                     total_info = f'位置: {location}\n氣候: {current_weather["Wx"]}\n降雨機率: {current_weather["PoP"]}\n體感: {current_weather["CI"]}\n現在時間: {formatted_time}'
                     response = model.generate_content(
-                        f'{text}」'
+                        f'請用繁體中文、以精簡並且不要加上任何文字格式回覆以下的訊息，{text}'
                     )
                     reply_msg = response.text
             else:
