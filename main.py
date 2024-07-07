@@ -108,7 +108,7 @@ async def handle_callback(request: Request):
                 "地震": 'C',
                 "氣候": 'D',
                 "其他": 'E',
-                "連接spotify": 'F',
+                "spotify": 'F',
                 "FoMO": 'G',
                 "符合": 'H',
                 "音樂": 'I'
@@ -136,7 +136,7 @@ async def handle_callback(request: Request):
                 earth_res = requests.get(f'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/E-A0015-003?Authorization={OPEN_API_KEY}&downloadType=WEB&format=JSON')
                 url = earth_res.json()["cwaopendata"]["Dataset"]["Resource"]["ProductURL"]
                 reply_msg = check_image_quake(url) + f'\n\n{url}'
-            elif text_condition == 'F'
+            elif text_condition == 'F':
                 reply_msg = '如下'
             elif text_condition == 'D':
                 location_text = '台北市'
