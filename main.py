@@ -95,8 +95,7 @@ async def handle_callback(request: Request):
             user_chat_path = f'chat/{user_id}'
             chat_state_path = f'state/{user_id}'
         chatgpt = fdb.get(user_chat_path, None)
-if text == '連接spotify' or '什麼是FoMO' or '緩解FoMO指南' or '我符合0個' or '我符合1個' or '我符合2個' or '我符合3個' or'我符合4個' or '我符合5個' or 'FoMO測驗' or '推薦播放清單' or '推薦歌曲'
-else:
+
         if msg_type == 'text':
             if chatgpt is None:
                 messages = []
@@ -108,7 +107,11 @@ else:
                 "摘要": 'B',
                 "地震": 'C',
                 "氣候": 'D',
-                "其他": 'E'
+                "其他": 'E',
+                "連接spotify": 'F',
+                "FoMO": 'G',
+                "符合": 'H',
+                "音樂": 'I'
             }
 
             model = genai.GenerativeModel('gemini-1.5-pro')
@@ -133,6 +136,8 @@ else:
                 earth_res = requests.get(f'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/E-A0015-003?Authorization={OPEN_API_KEY}&downloadType=WEB&format=JSON')
                 url = earth_res.json()["cwaopendata"]["Dataset"]["Resource"]["ProductURL"]
                 reply_msg = check_image_quake(url) + f'\n\n{url}'
+            elif text_condition == 'F' or 'G' or 'H' or 'I'
+                reply_msg = '如下'
             elif text_condition == 'D':
                 location_text = '台北市'
                 location = check_location_in_message(location_text)
