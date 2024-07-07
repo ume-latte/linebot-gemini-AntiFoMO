@@ -1,55 +1,3 @@
-import logging
-import os
-import re
-import sys
-from datetime import datetime
-import requests
-
-if os.getenv('API_ENV') != 'production':
-    from dotenv import load_dotenv
-    load_dotenv()
-
-from fastapi import FastAPI, HTTPException, Request
-from linebot import (
-    LineBotApi, WebhookParser
-)
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
-    TemplateSendMessage, ButtonsTemplate, MessageAction, URIAction,
-    FlexSendMessage
-)
-import uvicorn
-
-import google.generativeai as genai
-from firebase import firebase
-from utils import check_image_quake, check_location_in_message, get_current_weather, get_weather_data, simplify_data
-
-app = FastAPI()
-logging.basicConfig(level=os.getenv('LOG', 'WARNING'))
-logger = logging.getLogger(__file__)
-
-channel_secret = os.getenv('LINE_CHANNEL_SECRET')
-channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
-if not channel_secret or not channel_access_token:
-    logger.error('Specify LINE_CHANNEL_SECRET and LINE_CHANNEL_ACCESS_TOKEN as environment variables.')
-    sys.exit(1)
-
-line_bot_api = LineBotApi(channel_access_token)
-parser = WebhookParser(channel_secret)
-
-firebase_url = os.getenv('FIREBASE_URL')
-gemini_key = os.getenv('GEMINI_API_KEY')
-
-# Initialize the Gemini Pro API
-genai.configure(api_key=gemini_key)
-
-@app.get("/health")
-async def health():
-    return 'ok'
-
 @app.post("/webhooks/line")
 async def handle_callback(request: Request):
     signature = request.headers['X-Line-Signature']
@@ -71,6 +19,11 @@ async def handle_callback(request: Request):
             continue
         text = event.message.text
         user_id = event.source.user_id
+
+        # 關鍵字過濾
+        ignore_keywords = ["什麼是FoMO", "緩解FoMO指南", "FoMO測試", "連接spotify", "推薦歌曲", "推薦播放清單"]
+        if any(keyword in text for keyword in ignore_keywords):
+            return 'OK'
 
         msg_type = event.message.type
         fdb = firebase.FirebaseApplication(firebase_url, None)
@@ -153,9 +106,3 @@ async def handle_callback(request: Request):
             )
 
     return 'OK'
-
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', default=8080))
-    debug = True if os.environ.get('API_ENV', default='develop') == 'develop' else False
-    logging.info('Application will start...')
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=debug)
