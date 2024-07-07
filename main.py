@@ -95,7 +95,8 @@ async def handle_callback(request: Request):
             user_chat_path = f'chat/{user_id}'
             chat_state_path = f'state/{user_id}'
         chatgpt = fdb.get(user_chat_path, None)
-
+if msg == '連接spotify' or '什麼是FoMO' or '緩解FoMO指南' or '我符合0個' or '我符合1個' or '我符合2個' or '我符合3個' or'我符合4個' or '我符合5個' or 'FoMO測驗' or '推薦播放清單' or '推薦歌曲'
+else:
         if msg_type == 'text':
             if chatgpt is None:
                 messages = []
@@ -145,7 +146,7 @@ async def handle_callback(request: Request):
                 if current_weather is not None:
                     total_info = f'位置: {location}\n氣候: {current_weather["Wx"]}\n降雨機率: {current_weather["PoP"]}\n體感: {current_weather["CI"]}\n現在時間: {formatted_time}'
                     response = model.generate_content(
-                        f'請用繁體中文、以精簡並且不要加上任何文字格式（包括粗體斜體還有*號等等）回覆以下的訊息，{text}，但如果問題具有'連接spotify' 、 '什麼是FoMO' 、 '緩解FoMO指南' 、 '我符合0個' 、 '我符合1個' 、 '我符合2個' 、 '我符合3個' 、'我符合4個' 、 '我符合5個' 、 'FoMO測驗' 、 '推薦播放清單' 、 '推薦歌曲'則不要給予回覆'
+                        f'請用繁體中文、以精簡並且不要加上任何文字格式（包括粗體斜體還有*號等等）回覆以下的訊息，{text}'
                     )
                     reply_msg = response.text
             else:
