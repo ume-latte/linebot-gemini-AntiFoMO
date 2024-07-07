@@ -23,7 +23,7 @@ async def handle_callback(request: Request):
         # 關鍵字過濾
         ignore_keywords = ["什麼是FoMO", "緩解FoMO指南", "FoMO測試", "連接spotify", "推薦歌曲", "推薦播放清單"]
         if any(keyword in text for keyword in ignore_keywords):
-            return 'OK'
+            return 'OK'  # Ignore the message if it contains any of the ignore_keywords
 
         msg_type = event.message.type
         fdb = firebase.FirebaseApplication(firebase_url, None)
