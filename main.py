@@ -95,7 +95,7 @@ async def handle_callback(request: Request):
             user_chat_path = f'chat/{user_id}'
             chat_state_path = f'state/{user_id}'
         chatgpt = fdb.get(user_chat_path, None)
-if msg == '連接spotify' or '什麼是FoMO' or '緩解FoMO指南' or '我符合0個' or '我符合1個' or '我符合2個' or '我符合3個' or'我符合4個' or '我符合5個' or 'FoMO測驗' or '推薦播放清單' or '推薦歌曲'
+if text == '連接spotify' or '什麼是FoMO' or '緩解FoMO指南' or '我符合0個' or '我符合1個' or '我符合2個' or '我符合3個' or'我符合4個' or '我符合5個' or 'FoMO測驗' or '推薦播放清單' or '推薦歌曲'
 else:
         if msg_type == 'text':
             if chatgpt is None:
