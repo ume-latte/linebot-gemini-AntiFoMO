@@ -1,20 +1,13 @@
 import logging
 import os
 import re
-import sys
 from datetime import datetime
 import requests
 
 from fastapi import FastAPI, HTTPException, Request
-from linebot import (
-    LineBotApi, WebhookParser
-)
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage
-)
+from linebot import LineBotApi, WebhookParser
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import uvicorn
 
 import google.generativeai as genai
@@ -22,14 +15,14 @@ from firebase import firebase
 from utils import check_image_quake, check_location_in_message, get_current_weather, get_weather_data, simplify_data
 
 app = FastAPI()
-logging.basicConfig(level=logging.INFO)  # 設置適當的日誌級別
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 channel_secret = os.getenv('LINE_CHANNEL_SECRET')
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
 if not channel_secret or not channel_access_token:
     logger.error('Specify LINE_CHANNEL_SECRET and LINE_CHANNEL_ACCESS_TOKEN as environment variables.')
-    sys.exit(1)
+    raise SystemExit(1)
 
 line_bot_api = LineBotApi(channel_access_token)
 parser = WebhookParser(channel_secret)
@@ -37,7 +30,7 @@ parser = WebhookParser(channel_secret)
 firebase_url = os.getenv('FIREBASE_URL')
 gemini_key = os.getenv('GEMINI_API_KEY')
 
-# 初始化 Gemini Pro API
+# Initialize Gemini Pro API
 genai.configure(api_key=gemini_key)
 
 @app.get("/health")
@@ -48,7 +41,7 @@ async def health():
 async def handle_callback(request: Request):
     signature = request.headers.get('X-Line-Signature')
 
-    # 取得請求主體的文字
+    # Get request body as text
     body = await request.body()
     body = body.decode()
 
@@ -58,17 +51,16 @@ async def handle_callback(request: Request):
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     for event in events:
-        if not isinstance(event, MessageEvent):
+        if not isinstance(event, MessageEvent) or not isinstance(event.message, TextMessage):
             continue
-        if not isinstance(event.message, TextMessage):
-            continue
+        
         text = event.message.text
         user_id = event.source.user_id
 
-        # 關鍵字過濾
+        # Keyword filtering
         ignore_keywords = ["什麼是FoMO", "緩解FoMO指南", "FoMO測試", "連接spotify", "推薦歌曲", "推薦播放清單"]
         if any(keyword in text for keyword in ignore_keywords):
-            return 'OK'  # 忽略包含任何 ignore_keywords 的訊息
+            return 'OK'  # Ignore messages containing any of the ignore_keywords
 
         msg_type = event.message.type
         fdb = firebase.FirebaseApplication(firebase_url, None)
@@ -78,6 +70,7 @@ async def handle_callback(request: Request):
         else:
             user_chat_path = f'chat/{user_id}'
             chat_state_path = f'state/{user_id}'
+        
         chatgpt = fdb.get(user_chat_path, None)
 
         if msg_type == 'text':
