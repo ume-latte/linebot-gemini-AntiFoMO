@@ -108,7 +108,7 @@ async def handle_callback(request: Request):
                 "地震": 'C',
                 "氣候": 'D',
                 "其他": 'E',
-                "spotify": 'F',
+                "連接spotify": 'F',
                 "FoMO": 'G',
                 "符合": 'H',
                 "音樂": 'I'
