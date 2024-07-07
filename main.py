@@ -61,25 +61,25 @@ async def handle_callback(request: Request):
         ignore_keywords = ["什麼是FoMO", "緩解FoMO指南", "FoMO測試", "連接spotify", "推薦歌曲", "推薦播放清單"]
         if any(keyword in text for keyword in ignore_keywords):
             return 'OK'  # Ignore messages containing any of the ignore_keywords
-
-        msg_type = event.message.type
-        fdb = firebase.FirebaseApplication(firebase_url, None)
-
-        if event.source.type == 'group':
-            user_chat_path = f'chat/{event.source.group_id}'
         else:
-            user_chat_path = f'chat/{user_id}'
-            chat_state_path = f'state/{user_id}'
-        
-        chatgpt = fdb.get(user_chat_path, None)
+         msg_type = event.message.type
+         fdb = firebase.FirebaseApplication(firebase_url, None)
 
-        if msg_type == 'text':
-            if chatgpt is None:
-                messages = []
-            else:
-                messages = chatgpt
+         if event.source.type == 'group':
+             user_chat_path = f'chat/{event.source.group_id}'
+         else:
+             user_chat_path = f'chat/{user_id}'
+             chat_state_path = f'state/{user_id}'
+         
+         chatgpt = fdb.get(user_chat_path, None)
+ 
+         if msg_type == 'text':
+             if chatgpt is None:
+                 messages = []
+             else:
+                 messages = chatgpt
 
-            bot_condition = {
+             bot_condition = {
                 "清空": 'A',
                 "摘要": 'B',
                 "地震": 'C',
@@ -89,9 +89,9 @@ async def handle_callback(request: Request):
                 "FoMO": 'G',
                 "符合": 'H',
                 "其他": 'I'
-            }
+             }
 
-            try:
+             try:
                 model = genai.GenerativeModel('gemini-1.5-pro')
                 response = model.generate_content(
                     f'請判斷 {text} 裡面的文字屬於 {bot_condition} 裡面的哪一項？符合條件請回傳對應的英文文字就好，不要有其他的文字與字元。'
@@ -116,6 +116,7 @@ async def handle_callback(request: Request):
                     reply_msg = check_image_quake(url) + f'\n\n{url}'
                 elif text_condition in ['E', 'F', 'G', 'H']:
                     reply_msg = '如下'
+                    reply_msg = response.text
                 elif text_condition == 'I':
                     location_text = '台北市'
                     location = check_location_in_message(location_text)
@@ -144,10 +145,10 @@ async def handle_callback(request: Request):
                     TextSendMessage(text=reply_msg)
                 )
 
-            except Exception as e:
+             except Exception as e:
                 logger.error(f"Error processing message: {e}")
 
-    return 'OK'
+     return 'OK'
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 8080))
